@@ -18,12 +18,15 @@ export default {
     ],
     link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
   },
+  mode: 'universal',
 
   // Global CSS: https://go.nuxtjs.dev/config-css
   css: [],
 
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
-  plugins: [],
+  plugins: [
+    '~/plugins/supabase.js',
+  ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components
   components: true,

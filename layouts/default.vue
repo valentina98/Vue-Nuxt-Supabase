@@ -52,6 +52,7 @@
       <v-spacer />
       <v-btn
         icon
+        color="primary"
         @click.stop="rightDrawer = !rightDrawer"
       >
         <v-icon>mdi-menu</v-icon>

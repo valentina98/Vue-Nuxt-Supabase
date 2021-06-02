@@ -1,31 +1,35 @@
 <template>
   <div class="todo-item">
     <div class="todo-item-left">
-      <input v-model="completed" type="checkbox" @change="doneEditTodo" />
+      <v-checkbox v-model="todoItem.completed" @change="doneEditTodo" />
       <div
-        v-if="!editing"
+        v-if="!todo.editing"
         class="todo-item-label"
-        :class="{ completed: completed }"
+        :class="{ completed: todo.completed }"
         @dblclick="editTodo"
       >
-        {{ title }}
+        {{ todoItem.title }}
       </div>
-      <input
+      <v-text-field
         v-else
-        v-model="title"
         v-focus
+        v-model="todoItem.title"
         type="text"
-        class="todo-item-edit"
         @blur="doneEditTodo"
         @keyup.enter="doneEditTodo"
+        outlined
         @keyup.esc="cancelEdit"
       />
     </div>
-    <div class="remove-item" @click="removeTodo(index)">&times;</div>
+    <v-btn color="primary" icon class="remove-item" @click="removeTodo(index)">
+      <v-icon>mdi-close</v-icon>
+    </v-btn>
   </div>
 </template>
 
 <script>
+import {todoService} from "~/mixins/todo.service";
+
 export default {
   name: 'TodoItem',
   directives: {
@@ -35,6 +39,7 @@ export default {
       },
     },
   },
+  mixins: [todoService],
   props: {
     todo: {
       type: Object,
@@ -44,57 +49,45 @@ export default {
       type: Number,
       required: true,
     },
-    checkAll: {
-      type: Boolean,
-      required: true,
-    },
   },
   data() {
     return {
-      id: this.todo.id,
-      title: this.todo.title,
-      completed: this.todo.completed,
-      editing: this.todo.editing,
       beforeEditCache: '',
+      todoItem: null,
     }
   },
   watch: {
-    checkAll() {
-      if (this.checkAll) {
-        this.completed = true
-      } else {
-        this.completed = this.todo.completed
-      }
+    todo: {
+      deep: true,
+      handler() {
+        this.finishedEdit(this.todoItem)
+      },
     },
+  },
+  created() {
+    this.todoItem = this.todo
   },
   methods: {
     removeTodo(index) {
       this.$emit('removedTodo', index)
     },
     editTodo() {
-      this.beforeEditCache = this.title
-      this.editing = true
+      this.beforeEditCache = this.todoItem.title
+      this.todoItem.editing = true
     },
-    doneEditTodo() {
-      if (this.title.trim().length === 0) {
+    async doneEditTodo() {
+      if (this.todoItem.title.trim().length === 0) {
         // if empty
-        this.title = this.beforeEditCache
+        this.todoItem.title = this.beforeEditCache
       }
-      this.editing = false
 
-      this.$emit('finishedEdit', {
-        index: this.index,
-        todo: {
-          id: this.id,
-          title: this.title,
-          completed: this.completed,
-          editing: this.editing,
-        },
-      })
+      this.todoItem.editing = false
+
+      await this.finishedEdit(this.todoItem)
     },
     cancelEdit() {
-      this.title = this.beforeEditCache
-      this.editing = false
+      this.todoItem.title = this.beforeEditCache
+      this.todoItem.editing = false
     },
   },
 }
@@ -124,10 +117,5 @@ export default {
 .todo-item-edit {
   width: 100%;
   border: 1px solid #ccc;
-}
-button {
-  font-size: 14px;
-  background-color: white;
-  appearance: none;
 }
 </style>

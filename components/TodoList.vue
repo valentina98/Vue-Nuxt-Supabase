@@ -14,29 +14,23 @@
       :index="index"
       :check-all="!anyRemaining"
       @removedTodo="removeTodo($event)"
-      @finishedEdit="finishedEdit"
     ></todo-item>
-
-    <div class="extra-container">
-      <div>
-        <label>
-          <input
-            type="checkbox"
-            :checked="!anyRemaining"
-            @change="checkAllTodos"
-          />
-          Check all
-        </label>
-      </div>
-      <div>{{ remaining }} items left</div>
+    <v-divider></v-divider>
+    <div class="extra-container pa-5 d-flex">
+      <v-checkbox
+        v-model="checkedAll"
+        label="Check all"
+        @change="checkAllTodos"
+      />
+      <div class="pa-5">{{ remaining }} items left</div>
     </div>
-
+    <v-divider></v-divider>
     <div class="extra-container">
       <div>
         <v-btn
           depressed
           elevation="2"
-          :class="{ active: filter == 'all' }"
+          :color="isActive('all')"
           @click="filter = 'all'"
         >
           All
@@ -44,7 +38,7 @@
         <v-btn
           depressed
           elevation="2"
-          :class="{ active: filter == 'active' }"
+          :color="isActive('active')"
           @click="filter = 'active'"
         >
           Active
@@ -53,7 +47,7 @@
         <v-btn
           depressed
           elevation="2"
-          :class="{ active: filter == 'completed' }"
+          :color="isActive('completed')"
           @click="filter = 'completed'"
         >
           Completed
@@ -75,13 +69,14 @@
 
 <script>
 import TodoItem from './TodoItem'
-import DatabaseService from './Database.service'
+import { todoService } from '~/mixins/todo.service'
 
 export default {
   name: 'TodoList',
   components: {
     TodoItem,
   },
+  mixins: [todoService],
   data() {
     return {
       database: null,
@@ -90,6 +85,7 @@ export default {
       newTodo: '',
       beforeEditCache: '',
       filter: 'all',
+      checkedAll: false,
     }
   },
   computed: {
@@ -106,47 +102,36 @@ export default {
         return this.todos.filter((todo) => !todo.completed)
       } else if (this.filter === 'completed') {
         return this.todos.filter((todo) => todo.completed)
+      } else {
+        return []
       }
     },
     showClearCompletedButton() {
       return this.todos.filter((todo) => todo.completed).length > 0
     },
   },
-  created() {
-    const database = new DatabaseService()
-    this.database = database.getInstance()
-  },
-  async mounted() {
-    await this.fetchTodos()
+  async created() {
+    this.todos = await this.fetchTodos()
     this.subscribeTodos()
   },
   destroyed() {
-    this.unsubscribeTodos()
+    this.$db.removeSubscription(this.subscriptionTodos)
   },
   methods: {
-    async addTodo() {
-      if (this.newTodo.trim().length === 0) {
-        // if empty
-        return
-      }
-      const { response, error } = await this.database.from('todos').insert([
-        {
-          title: this.newTodo,
-          completed: false,
-        },
-      ])
-      this.newTodo = ''
+    isActive(name) {
+      return this.filter === name ? 'primary' : ''
     },
-    async removeTodo(index) {
-      console.log(index)
-      // const { response, error } = await this.database
-      //   .from('todos')
-      //   .delete()
-      //   .match({ id: index })
+    async addTodo() {
+      if (this.newTodo.trim().length === 0) return
+
+      await this.createTodo(this.newTodo)
+
+      // clear the input field
+      this.newTodo = ''
     },
     checkAllTodos() {
       this.todos.forEach((todo) => {
-        todo.completed = event.target.checked
+        todo.completed = !!this.checkedAll
         this.finishedEdit({ todo })
       })
     },
@@ -154,33 +139,10 @@ export default {
       const completedTodos = this.todos.filter((todo) => todo.completed)
       completedTodos.forEach((todo) => this.removeTodo(todo.id))
     },
-    async finishedEdit(data) {
-      // console.log(data.todo)
 
-      const { response, error } = await this.database
-        .from('todos')
-        .update(data.todo)
-        .eq('id', data.todo.id)
-    },
-
-    async fetchTodos() {
-      const { error, data } = await this.database
-        .from('todos')
-        .select()
-        .order('id')
-
-      if (error) {
-        console.error(error)
-        return
-      }
-
-      this.setTodos(data)
-    },
-    setTodos(todos) {
-      this.todos = todos
-    },
+    // TODO: fix that mess
     subscribeTodos() {
-      this.subscriptionTodos = this.database
+      this.subscriptionTodos = this.$db
         .from('todos')
         .on('INSERT', (payload) => {
           console.log('Change received!', payload.new)
@@ -207,27 +169,6 @@ export default {
         })
         .subscribe()
     },
-    unsubscribeTodos() {
-      this.database.removeSubscription(this.subscriptionTodos)
-    },
   },
 }
 </script>
-
-<style>
-.todo-input {
-  width: 100%;
-  padding: 10px 18px;
-  font-size: 18px;
-  margin-bottom: 16px;
-}
-.extra-container {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 16px;
-  border-top: 1px solid black;
-  padding-top: 14px;
-  margin-bottom: 14px;
-}
-</style>
