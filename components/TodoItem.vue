@@ -1,19 +1,19 @@
 <template>
-  <div class="todo-item">
-    <div class="todo-item-left">
-      <v-checkbox v-model="todoItem.completed" @change="doneEditTodo" />
+  <div class="d-flex flex-row align-center" >
+    <v-checkbox class="pa-2" v-model="todo.completed" @change="doneEditTodo" />
+    <div class="pa-2">
       <div
-        v-if="!todo.editing"
-        class="todo-item-label"
-        :class="{ completed: todo.completed }"
+        v-if="!editing"
+        :class='[{"text-decoration-line-through": todo.completed}]'
         @dblclick="editTodo"
       >
-        {{ todoItem.title }}
+        {{ todo.title }}
       </div>
       <v-text-field
+        hide-details
         v-else
         v-focus
-        v-model="todoItem.title"
+        v-model="todo.title"
         type="text"
         @blur="doneEditTodo"
         @keyup.enter="doneEditTodo"
@@ -21,7 +21,8 @@
         @keyup.esc="cancelEdit"
       />
     </div>
-    <v-btn color="primary" icon class="remove-item" @click="removeTodo(index)">
+    <v-spacer></v-spacer>
+    <v-btn color="primary" icon @click="removeTodo(todo.id)">
       <v-icon>mdi-close</v-icon>
     </v-btn>
   </div>
@@ -45,77 +46,33 @@ export default {
       type: Object,
       required: true,
     },
-    index: {
-      type: Number,
-      required: true,
-    },
   },
   data() {
     return {
       beforeEditCache: '',
-      todoItem: null,
+      editing: false,
     }
   },
-  watch: {
-    todo: {
-      deep: true,
-      handler() {
-        this.finishedEdit(this.todoItem)
-      },
-    },
-  },
-  created() {
-    this.todoItem = this.todo
-  },
   methods: {
-    removeTodo(index) {
-      this.$emit('removedTodo', index)
-    },
     editTodo() {
-      this.beforeEditCache = this.todoItem.title
-      this.todoItem.editing = true
+      this.beforeEditCache = this.todo.title
+      this.editing = true
     },
-    async doneEditTodo() {
-      if (this.todoItem.title.trim().length === 0) {
+    doneEditTodo() {
+      if (this.todo.title.trim().length === 0) {
         // if empty
-        this.todoItem.title = this.beforeEditCache
+        this.todo.title = this.beforeEditCache
       }
 
-      this.todoItem.editing = false
+      this.editing = false
 
-      await this.finishedEdit(this.todoItem)
+      this.finishedEdit(this.todo)
     },
     cancelEdit() {
-      this.todoItem.title = this.beforeEditCache
-      this.todoItem.editing = false
+      this.todo.title = this.beforeEditCache
+      this.editing = false
     },
   },
 }
 </script>
 
-<style>
-.todo-item {
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.remove-item {
-  cursor: pointer;
-  margin-left: 14px;
-}
-.todo-item-left {
-  display: flex;
-  align-items: center;
-}
-.todo-item-label,
-.todo-item-edit {
-  font-size: 18px;
-  padding: 10px;
-  margin-left: 12px;
-}
-.todo-item-edit {
-  width: 100%;
-  border: 1px solid #ccc;
-}
-</style>

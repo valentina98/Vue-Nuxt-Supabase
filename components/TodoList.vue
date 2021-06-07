@@ -3,10 +3,20 @@
     <v-text-field
       v-model="newTodo"
       type="text"
-      class="todo-input"
       placeholder="What should I do"
       @keyup.enter="addTodo"
     ></v-text-field>
+
+    <v-sheet
+      class="pa-5"
+      v-if=loadingPage
+    >
+      <v-skeleton-loader
+        class="mx-auto"
+        type="list-item-three-line"
+      ></v-skeleton-loader>
+    </v-sheet>
+
     <todo-item
       v-for="(todo, index) in todosFiltered"
       :key="todo.id"
@@ -15,8 +25,8 @@
       :check-all="!anyRemaining"
       @removedTodo="removeTodo($event)"
     ></todo-item>
-    <v-divider></v-divider>
-    <div class="extra-container pa-5 d-flex">
+    <v-divider class="pa-2"></v-divider>
+    <div class="d-flex justify-space-between pa-5">
       <v-checkbox
         v-model="checkedAll"
         label="Check all"
@@ -24,7 +34,7 @@
       />
       <div class="pa-5">{{ remaining }} items left</div>
     </div>
-    <v-divider></v-divider>
+    <v-divider class="pa-2"></v-divider>
     <div class="extra-container">
       <div>
         <v-btn
@@ -83,9 +93,10 @@ export default {
       todos: [],
       subscriptionTodos: undefined,
       newTodo: '',
-      beforeEditCache: '',
       filter: 'all',
       checkedAll: false,
+      snackbar: false,
+      loadingPage: true,
     }
   },
   computed: {
@@ -107,32 +118,41 @@ export default {
       }
     },
     showClearCompletedButton() {
+      // show that button only if there is a completed todo
       return this.todos.filter((todo) => todo.completed).length > 0
     },
   },
   async created() {
     this.todos = await this.fetchTodos()
     this.subscribeTodos()
+
+    // remove loader
+    this.loadingPage = false
   },
   destroyed() {
     this.$db.removeSubscription(this.subscriptionTodos)
   },
   methods: {
     isActive(name) {
+      // change the active filter button color
       return this.filter === name ? 'primary' : ''
     },
     async addTodo() {
+      // if empty don't add it
       if (this.newTodo.trim().length === 0) return
 
+      // create the item
       await this.createTodo(this.newTodo)
 
       // clear the input field
       this.newTodo = ''
     },
     checkAllTodos() {
+      // loop through of the todos and mark all of them as completed
       this.todos.forEach((todo) => {
-        todo.completed = !!this.checkedAll
-        this.finishedEdit({ todo })
+        // checkedAll is the value of the checkbox 'Check all'
+        todo.completed = this.checkedAll
+        this.finishedEdit( todo )
       })
     },
     clearCompleted() {
