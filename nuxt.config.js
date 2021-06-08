@@ -26,8 +26,8 @@ export default {
   // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
   plugins: [
     '~/plugins/supabase.js',
-    '~/plugins/notifier.js',
     { src: '~/plugins/vuex-persist', ssr: false },
+    '~/plugins/notifier.js',
   ],
 
   // Auto import components: https://go.nuxtjs.dev/config-components

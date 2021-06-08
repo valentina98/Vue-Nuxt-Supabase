@@ -32,9 +32,9 @@
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
       <v-toolbar-title v-text="title" />
       <v-spacer />
-      <div v-if="$auth.loggedIn">
-        {{ $auth.user.email }}
-
+      <div v-if="$store.state.loggedIn">
+        {{ $store.state.user }}
+        <v-btn text @click="logoutUser">Logout</v-btn>
       </div>
       <div v-else>
         <v-btn text to="/login">Login</v-btn>
@@ -44,37 +44,24 @@
     <v-main>
       <v-container>
         <nuxt />
+        <Snackbar></Snackbar>
       </v-container>
     </v-main>
-    <v-navigation-drawer
-      v-model="rightDrawer"
-      :right="right"
-      temporary
-      fixed
-    >
-      <v-list>
-        <v-list-item @click.native="right = !right">
-          <v-list-item-action>
-            <v-icon light>
-              mdi-repeat
-            </v-icon>
-          </v-list-item-action>
-          <v-list-item-title>Switch drawer (click me)</v-list-item-title>
-        </v-list-item>
-      </v-list>
-    </v-navigation-drawer>
     <v-footer
       :absolute="!fixed"
       app
     >
       <span>&copy; {{ new Date().getFullYear() }}</span>
     </v-footer>
-    <Snackbar></Snackbar>
   </v-app>
 </template>
 
 <script>
+import { todoService } from '~/mixins/todo.service'
+import Snackbar from '~/components/Snackbar.vue'
+
 export default {
+
   data () {
     return {
       clipped: false,
@@ -83,20 +70,17 @@ export default {
       items: [
         {
           icon: 'mdi-apps',
-          title: 'Welcome',
+          title: 'Todo List',
           to: '/'
         },
-        {
-          icon: 'mdi-chart-bubble',
-          title: 'Inspire',
-          to: '/inspire'
-        }
       ],
       miniVariant: false,
-      right: true,
-      rightDrawer: false,
-      title: 'Vuetify.js'
+      title: 'Todo List',
+      snackbar: true,
+      snackbarText: '',
     }
-  }
+  },
+  components: { Snackbar },
+  mixins: [todoService],
 }
 </script>

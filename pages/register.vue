@@ -6,20 +6,13 @@
 </template>
 
 <script>
-  import UserAuthForm from '~/components/UserAuthForm'
+import UserAuthForm from '~/components/UserAuthForm'
+import { todoService } from '~/mixins/todo.service'
 
-  export default {
-    components:{
-      UserAuthForm,
-    },
-    methods: {
-      async registerUser(registrationInfo) {
-        const {user, session, error} = await this.$db.auth.signUp(
-          registrationInfo
-        )
-        console.log({user, session, error})
-      },
-    }
-  }
-
+export default {
+  components:{
+    UserAuthForm,
+  },
+  mixins: [todoService],
+}
 </script>

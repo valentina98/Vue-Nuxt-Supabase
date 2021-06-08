@@ -63,16 +63,6 @@
           Completed
         </v-btn>
       </div>
-      <div>
-        <v-btn
-          v-if="showClearCompletedButton"
-          depressed
-          elevation="2"
-          @click="clearCompleted"
-        >
-          Clear completed
-        </v-btn>
-      </div>
     </div>
   </div>
 </template>
@@ -117,14 +107,11 @@ export default {
         return []
       }
     },
-    showClearCompletedButton() {
-      // show that button only if there is a completed todo
-      return this.todos.filter((todo) => todo.completed).length > 0
-    },
   },
   async created() {
     this.todos = await this.fetchTodos()
     this.subscribeTodos()
+
 
     // remove loader
     this.loadingPage = false
@@ -154,10 +141,6 @@ export default {
         todo.completed = this.checkedAll
         this.finishedEdit( todo )
       })
-    },
-    clearCompleted() {
-      const completedTodos = this.todos.filter((todo) => todo.completed)
-      completedTodos.forEach((todo) => this.removeTodo(todo.id))
     },
 
     // TODO: fix that mess
