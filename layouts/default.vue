@@ -32,8 +32,8 @@
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
       <v-toolbar-title v-text="title" />
       <v-spacer />
-      <div v-if="$store.state.loggedIn">
-        {{ $store.state.user }}
+      <div v-if="loggedIn">
+        {{ user }}
         <v-btn text @click="logoutUser">Logout</v-btn>
       </div>
       <div v-else>
@@ -61,7 +61,14 @@ import { todoService } from '~/mixins/todo.service'
 import Snackbar from '~/components/Snackbar.vue'
 
 export default {
-
+  computed: {
+    user() {
+      return this.$store.state.user
+    },
+    loggedIn() {
+      return this.$store.state.loggedIn
+    },
+  },
   data () {
     return {
       clipped: false,
@@ -75,9 +82,7 @@ export default {
         },
       ],
       miniVariant: false,
-      title: 'Todo List',
-      snackbar: true,
-      snackbarText: '',
+      title: 'Home',
     }
   },
   components: { Snackbar },

@@ -143,32 +143,21 @@ export default {
       })
     },
 
-    // TODO: fix that mess
     subscribeTodos() {
       this.subscriptionTodos = this.$db
         .from('todos')
         .on('INSERT', (payload) => {
-          console.log('Change received!', payload.new)
+          // add this todo to the array which is displayed
           this.todos.push(payload.new)
         })
         .on('UPDATE', (payload) => {
-          console.log('Change received!', payload)
-          const elementPos = this.todos
-            .map(function (x) {
-              return x.id
-            })
-            .indexOf(payload.new.id)
-          // const objectFound = this.todos[elementPos]
-          this.todos.splice(elementPos, 1, payload.new)
+          
         })
         .on('DELETE', (payload) => {
-          console.log('Change received!', payload)
-          const elementPos = this.todos
-            .map(function (x) {
-              return x.id
-            })
-            .indexOf(payload.new.id)
-          this.todos.splice(elementPos, 1)
+          // remove this todo from the array which is displayed
+          this.todos = this.todos.filter(x => {
+            return x.id != payload.old.id
+          })
         })
         .subscribe()
     },

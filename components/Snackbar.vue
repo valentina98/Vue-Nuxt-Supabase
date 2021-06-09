@@ -1,5 +1,5 @@
 <template>
-  <v-snackbar v-model="show" :color="color">
+  <v-snackbar v-model="show" :color="color" :timeout="timeout">
     <div class="d-flex flex-row justify-space-between align-center">
       <div>{{ message }}</div>
       <v-btn text @click="show = false">Close</v-btn>
@@ -13,10 +13,10 @@ export default {
     return {
       show: false,
       message: '',
-      color: ''
+      color: '',
+      timeout: 1500,
     }
   },
-
   created () {
     this.$store.subscribe((mutation, state) => {
       if (mutation.type === 'snackbar/showMessage') {

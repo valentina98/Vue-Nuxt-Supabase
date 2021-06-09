@@ -1,7 +1,4 @@
-import store from '~/store/store'
-
 export const todoService = {
-  store,
   methods: {
     /**
      * @param todo.id
@@ -74,8 +71,9 @@ export const todoService = {
       }
       else {
         this.$store.dispatch('login', user.email)
-        window.location.assign('../')
-        console.log(this.$store.state)
+        this.$router.push({
+            path: '/'
+        })
         this.$notifier.showMessage({ content: "You logged in.", color: 'success' })
       }
     },
@@ -105,7 +103,9 @@ export const todoService = {
         this.$notifier.showMessage({ content: "An error occured!", color: 'error' })
       }
       else {
-        window.location.assign('../')
+        this.$router.push({
+            path: '/'
+        })
         this.$notifier.showMessage({ content: "You need to confirm your email and log in.", color: 'success' })
       }
     },
